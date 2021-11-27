@@ -70,6 +70,8 @@ with torch.no_grad():
         for idx, i in enumerate(output):
             if torch.argmax(i) == y[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
                 correctTE += 1
+            else:
+                print("Actual number value: ", y[idx].item(), " Network's guess: ", torch.argmax(i).item()) #prints the actual number against the estimation
             totalTE += 1
 current_time = time.time()
 testing_time = current_time - start_time
