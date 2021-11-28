@@ -11,11 +11,10 @@ learningRate = 0.001       # Change this value and run again
 neurons = 64     # Change this value and run again
 
 train = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))   # Downloading data sets
-
 test = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 
-trainset = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)  # Shuffling for better distribution
-testset = torch.utils.data.DataLoader(test, batch_size=10, shuffle=True)
+trainSet = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)  # Shuffling for better distribution
+testSet = torch.utils.data.DataLoader(test, batch_size=10, shuffle=True)
 
 
 class MyNetwork(nn.Module):
@@ -72,7 +71,7 @@ totalTraining = 0
 # Beginning training process for set amount of epochs
 start_time = time.time()
 for epoch in range(EPOCHS):
-    for data in trainset:  # data is a batch of featuresets and labels
+    for data in trainSet:  # data is a batch of featuresets and labels
         images, labels = data
         neuralNetwork.zero_grad()   # Initializing the weights
         output = neuralNetwork(images.view(-1, 28 * 28))
@@ -93,7 +92,7 @@ totalTesting = 0
 # Beginning testing process
 start_time = time.time()
 with torch.no_grad():
-    for data in testset:
+    for data in testSet:
         images, labels = data
         output = neuralNetwork(images.view(-1, 28 * 28))
         for idx, i in enumerate(output):
@@ -113,6 +112,7 @@ print("Testing Time: ", testing_time)
 print("Training Accuracy: ", round(correctTraining / totalTraining, 3))
 print("Testing Accuracy: ", round(correctTesting / totalTesting, 3))
 
-'''plt.imshow(images[0].view(28, 28))  # prints the first image of the dataset
-plt.show()
-print("My guess is: ", torch.argmax(neuralNetwork(images[0].view(-1, 28 * 28))[0]).item()) # prints the network's guess of the image'''
+
+'''print("My guess is: ", torch.argmax(neuralNetwork(images[0].view(-1, 28 * 28))[0]).item()) # prints the network's guess of the first image of the dataset
+plt.imshow(images[0].view(28, 28))  # prints the first image of the dataset
+plt.show()'''
