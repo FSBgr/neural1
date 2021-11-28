@@ -99,9 +99,9 @@ with torch.no_grad():
         for idx, i in enumerate(output):
             if torch.argmax(i) == labels[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
                 correctTesting += 1
-                print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item())  # prints the actual number against the estimation, toggle on to see results
-            else:
-                print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item()) # prints the actual number against the estimation, toggle on to see results
+                # print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item())  # prints the actual number against the estimation, toggle on to see results
+            # else:
+                # print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item()) # prints the actual number against the estimation, toggle on to see results
             totalTesting += 1
 current_time = time.time()
 testing_time = current_time - start_time
@@ -112,6 +112,7 @@ print("Training Time: ", training_time)
 print("Testing Time: ", testing_time)
 print("Training Accuracy: ", round(correctTraining / totalTraining, 3))
 print("Testing Accuracy: ", round(correctTesting / totalTesting, 3))
-'''plt.imshow(images[0].view(28, 28))
+
+'''plt.imshow(images[0].view(28, 28))  # prints the first image of the dataset
 plt.show()
-print(torch.argmax(neuralNetwork(images[0].view(-1, 28 * 28))[0])) # prints the network's guess of the previously shown number on the graph'''
+print("My guess is: ", torch.argmax(neuralNetwork(images[0].view(-1, 28 * 28))[0]).item()) # prints the network's guess of the image'''
