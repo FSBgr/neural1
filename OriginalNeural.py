@@ -6,7 +6,11 @@ import torch.nn.functional as F
 import torch.optim as optim
 import time
 
-train = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
+EPOCHS = 3       # Change this value and run again
+learningRate = 0.001       # Change this value and run again
+neurons = 64     # Change this value and run again
+
+train = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))   # Downloading data sets
 
 test = datasets.MNIST("", train=True, download=True, transform=transforms.Compose([transforms.ToTensor()]))
 
@@ -14,72 +18,100 @@ trainset = torch.utils.data.DataLoader(train, batch_size=10, shuffle=True)  # Sh
 testset = torch.utils.data.DataLoader(test, batch_size=10, shuffle=True)
 
 
-class Net(nn.Module):
+class MyNetwork(nn.Module):
     def __init__(self):
         super().__init__()  # Adding 4 fully connected layers
-        self.fc1 = nn.Linear(28 * 28, 64)  # 28 by 28 picture input
-        self.fc2 = nn.Linear(64, 64)  # input is 64 since previous layer output is 64
-        self.fc3 = nn.Linear(64, 64)
-        self.fc4 = nn.Linear(64, 10)  # Last layer output is 10, for the 10 single digit numbers
+        self.fc1 = nn.Linear(28 * 28, neurons)  # 28 by 28 picture input
+        self.fc2 = nn.Linear(neurons, neurons)  # input is 64 since previous layer output is 64
+        self.fc3 = nn.Linear(neurons, neurons)
+        self.fc4 = nn.Linear(neurons, 10)  # Last layer output is 10, for the 10 single digit numbers
+
+        '''self.fc1 = nn.Linear(28 * 28, neurons)
+        self.fc2 = nn.Linear(neurons, neurons) 
+        self.fc3 = nn.Linear(neurons, neurons)
+        self.fc4 = nn.Linear(neurons, neurons)
+        self.fc5 = nn.Linear(neurons, neurons)
+        self.fc6 = nn.Linear(neurons, neurons)
+        self.fc7 = nn.Linear(neurons, neurons)
+        self.fc8 = nn.Linear(neurons, 10)'''
 
     def forward(self, x):
         x = F.relu(self.fc1(x))  # F.relu being the activation function,
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
+
+        '''x = F.relu(self.fc1(x))  # F.relu being the activation function,
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
+        x = F.relu(self.fc5(x))
+        x = F.relu(self.fc6(x))
+        x = F.relu(self.fc7(x))
+        x = self.fc8(x)'''
+
+        '''x = F.softplus(self.fc1(x))  # F.relu being the activation function,
+        x = F.softplus(self.fc2(x))
+        x = F.softplus(self.fc3(x))
+        x = self.fc4(x)'''
+
         return F.log_softmax(x, dim=1)  # returning softmax output of last layer
 
 
-net = Net()
+neuralNetwork = MyNetwork()
 
-X = torch.rand((28, 28))
-X = X.view(-1, 28 * 28)  # flattening the tensor to fit the libraries, -1 specifies that input will be of unknown shape
-output = net(X)
+images = torch.rand((28, 28))
+images = images.view(-1, 28 * 28)  # flattening the tensor to fit the libraries, -1 specifies that input will be of unknown shape
+output = neuralNetwork(images)
 
-optimizer = optim.Adam(net.parameters(), lr=0.001)
-EPOCHS = 3
+optimizer = optim.Adam(neuralNetwork.parameters(), learningRate)
 
-correctTR = 0
-totalTR = 0
+correctTraining = 0
+totalTraining = 0
 
+# Beginning training process for set amount of epochs
 start_time = time.time()
 for epoch in range(EPOCHS):
     for data in trainset:  # data is a batch of featuresets and labels
-        X, y = data
-        net.zero_grad()
-        output = net(X.view(-1, 28 * 28))
+        images, labels = data
+        neuralNetwork.zero_grad()   # Initializing the weights
+        output = neuralNetwork(images.view(-1, 28 * 28))
         for idx, i in enumerate(output):
-            if torch.argmax(i) == y[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
-                correctTR += 1
-            totalTR += 1
-        loss = F.nll_loss(output, y)
+            if torch.argmax(i) == labels[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
+                correctTraining += 1
+            totalTraining += 1
+        loss = F.nll_loss(output, labels)
         loss.backward()
         optimizer.step()
 current_time = time.time()
 training_time = current_time - start_time
 
 
-correctTE = 0
-totalTE = 0
+correctTesting = 0
+totalTesting = 0
 
+# Beginning testing process
 start_time = time.time()
 with torch.no_grad():
     for data in testset:
-        X, y = data
-        output = net(X.view(-1, 28 * 28))
+        images, labels = data
+        output = neuralNetwork(images.view(-1, 28 * 28))
         for idx, i in enumerate(output):
-            if torch.argmax(i) == y[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
-                correctTE += 1
+            if torch.argmax(i) == labels[idx]:  # comparing the accuracy, for every prediction we make, does it match the actual value
+                correctTesting += 1
+                print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item())  # prints the actual number against the estimation, toggle on to see results
             else:
-                print("Actual number value: ", y[idx].item(), " Network's guess: ", torch.argmax(i).item()) #prints the actual number against the estimation
-            totalTE += 1
+                print("Actual number value: ", labels[idx].item(), " Network's guess: ", torch.argmax(i).item()) # prints the actual number against the estimation, toggle on to see results
+            totalTesting += 1
 current_time = time.time()
 testing_time = current_time - start_time
 
+
+# Printing results
 print("Training Time: ", training_time)
 print("Testing Time: ", testing_time)
-print("Training Accuracy: ", round(correctTR / totalTR, 3)) # printing results
-print("Testing Accuracy: ", round(correctTE / totalTE, 3)) # printing results
-plt.imshow(X[0].view(28, 28))
+print("Training Accuracy: ", round(correctTraining / totalTraining, 3))
+print("Testing Accuracy: ", round(correctTesting / totalTesting, 3))
+'''plt.imshow(images[0].view(28, 28))
 plt.show()
-print(torch.argmax(net(X[0].view(-1, 28 * 28))[0])) # prints the network's guess of the previously shown number on the graph
+print(torch.argmax(neuralNetwork(images[0].view(-1, 28 * 28))[0])) # prints the network's guess of the previously shown number on the graph'''
