@@ -1,28 +1,32 @@
 import matplotlib.pyplot as plt
 from sklearn import datasets
 from sklearn import svm
+import time
 
 digits = datasets.load_digits()  # loading the 0-9 digits dataset
+trainingSize = round(len(digits.data) * 0.6)  # declaring the size of the training set and the test set
+testingSize = round(len(digits.data) * 0.4)
 
-classifier = svm.SVC(gamma=0.0001, C=100)  # TODO: tweak the gamma
 
-trainingVectors, targetValues = digits.data[:-719], digits.target[:-719]  # dataset contains 1797 digits, so I use 60% of it as training, meaning up until the 719th element
-classifier.fit(trainingVectors, targetValues)
+classifier = svm.SVC(gamma=0.001, C=100)  # also try for gamma=0.1 and gamma=0.0001
+# classifier = svm.SVC(kernel="rbf")  # also try kernel="poly", kernel="rbf", kernel="linear"
 
-for i in range(-718 , -1):  # using the rest 40% of the set as testing set. This means starting from the 718th to last element until the last element
-    print("Prediction: ", classifier.predict(digits.data[i].reshape(1, -1)), " Actual Value: ", digits.target[i])
-    # plt.imshow(digits.images[i], cmap=plt.cm.gray_r, interpolation="nearest")
-    # plt.show()
+startTime = time.time()
+trainingSamples, trainingLabels = digits.data[:trainingSize], digits.target[:trainingSize]
+classifier.fit(trainingSamples, trainingLabels)
+finishTime = time.time()
+print("Training was completed in: ", finishTime - startTime, " seconds.")
 
-testSamples = digits.data[-719:] # taking the last 719 elements of the data to use as testing set
-trueLabels = digits.target[-719:]
-# print("The training accuracy is: ", clf.score(trainingVectors, targetValues)) # not correct yet
-print("The prediction/testing accuracy is: ", classifier.score(testSamples, trueLabels))
+# toggle on the following for loop to print the images and compare them with the SVM's guesses
 
-'''trainingGuesses = 0
-for i in range(-1797, -1078):
-    if classifier.predict(digits.data[i].reshape(1, -1)) == digits.target[i]:
-        trainingGuesses += 1
-print(trainingGuesses)'''
+# for i in range(trainingSize):
+#   print("Prediction: ", classifier.predict(digits.data[i].reshape(1, -1)), " Actual Value: ", digits.target[i])
+#   plt.imshow(digits.images[i], cmap=plt.cm.gray_r, interpolation="nearest")
 
-#TODO: figure out a way to measure the training accuracy
+testSamples = digits.data[trainingSize + 1: len(digits.data)]  # using the rest 40% of the set as testing set
+testLabels = digits.target[trainingSize + 1: len(digits.data)]
+print("The training accuracy is: ", classifier.score(trainingSamples, trainingLabels))
+startTime = time.time()
+print("The prediction/testing accuracy is: ", classifier.score(testSamples, testLabels))
+finishTime = time.time()
+print("Testing finished in: ", finishTime - startTime, " seconds.")
